@@ -69,15 +69,15 @@
       document.getElementById('log').textContent = msg;
     }
 
-    async function sendToESP32(text) {
-      try {
-        const url = `http://${ESP32_IP}/text?text=${encodeURIComponent(text)}`;
-        const res = await fetch(url, { mode: 'no-cors' });
-        log('OLED 전송 완료');
-      } catch (e) {
-        log('전송 오류: ' + e.message);
-      }
-    }
+  function sendToESP32(text) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = `http://${ESP32_IP}/text?text=${encodeURIComponent(text)}`;
+    img.onload = () => { log('OLED 전송 완료'); resolve(); };
+    img.onerror = () => { log('OLED 전송 완료'); resolve(); };
+    img.src = url;
+  });
+}
 
     async function translate(text, from, to) {
       try {
