@@ -69,7 +69,7 @@
       document.getElementById('log').textContent = msg;
     }
 
-  function sendToESP32(text) {
+function sendToESP32(text) {
   return new Promise((resolve) => {
     const img = new Image();
     const url = `http://${ESP32_IP}/text?text=${encodeURIComponent(text)}`;
