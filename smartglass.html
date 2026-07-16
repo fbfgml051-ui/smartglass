@@ -1,147 +1,141 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Glass</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a0f; color: #e8e8f0; font-family: -apple-system, 'SF Pro Display', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
-    h1 { font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: #5a5a7a; margin-bottom: 40px; }
-    #status-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 32px; font-size: 13px; color: #5a5a7a; }
-    #status-dot { width: 8px; height: 8px; border-radius: 50%; background: #3a3a5a; transition: background 0.3s; }
-    #status-dot.connected { background: #4ade80; box-shadow: 0 0 8px #4ade8088; }
-    #status-dot.listening { background: #60a5fa; box-shadow: 0 0 8px #60a5fa88; animation: pulse 1s infinite; }
-    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-    #display-box { width: 100%; max-width: 360px; background: #12121e; border: 1px solid #1e1e3a; border-radius: 16px; padding: 28px 24px; min-height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 32px; position: relative; }
-    #display-box::before { content: 'OLED 미리보기'; position: absolute; top: -10px; left: 16px; font-size: 10px; color: #3a3a5a; background: #0a0a0f; padding: 0 6px; }
-    #translated-text { font-size: 22px; font-weight: 500; color: #e8e8f0; text-align: center; line-height: 1.4; word-break: keep-all; }
-    #translated-text.placeholder { color: #2a2a4a; font-size: 14px; font-weight: 400; }
-    #original-text { width: 100%; max-width: 360px; font-size: 13px; color: #3a3a5a; text-align: center; min-height: 20px; margin-bottom: 40px; }
-    .btn-row { display: flex; gap: 12px; width: 100%; max-width: 360px; margin-bottom: 12px; }
-    button { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-    #btn-listen { background: #1a1a40; color: #60a5fa; border: 1px solid #2a2a6a; flex: 2; }
-    #btn-listen:disabled { opacity: 0.3; cursor: not-allowed; }
-    #btn-listen.listening { background: #60a5fa22; color: #60a5fa; border-color: #60a5fa66; }
-    .lang-row { display: flex; gap: 8px; width: 100%; max-width: 360px; margin-bottom: 32px; }
-    .lang-label { font-size: 12px; color: #3a3a5a; display: flex; align-items: center; gap: 6px; }
-    select { background: #12121e; color: #8080c0; border: 1px solid #1e1e3a; border-radius: 8px; padding: 6px 10px; font-size: 13px; font-family: inherit; cursor: pointer; flex: 1; }
-    #log { width: 100%; max-width: 360px; font-size: 11px; color: #4a4a6a; text-align: center; line-height: 1.6; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Glass</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#e8e8f0;font-family:-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+h1{font-size:13px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:#5a5a7a;margin-bottom:40px}
+#status-bar{display:flex;align-items:center;gap:8px;margin-bottom:32px;font-size:13px;color:#5a5a7a}
+#status-dot{width:8px;height:8px;border-radius:50%;background:#3a3a5a;transition:background 0.3s}
+#status-dot.active{background:#4ade80;box-shadow:0 0 8px #4ade8088}
+#status-dot.listening{background:#60a5fa;box-shadow:0 0 8px #60a5fa88;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+#display-box{width:100%;max-width:360px;background:#12121e;border:1px solid #1e1e3a;border-radius:16px;padding:28px 24px;min-height:120px;display:flex;align-items:center;justify-content:center;margin-bottom:32px;position:relative}
+#display-box::before{content:'OLED 미리보기';position:absolute;top:-10px;left:16px;font-size:10px;color:#3a3a5a;background:#0a0a0f;padding:0 6px}
+#translated-text{font-size:22px;font-weight:500;color:#e8e8f0;text-align:center;line-height:1.4;word-break:keep-all}
+#translated-text.placeholder{color:#2a2a4a;font-size:14px;font-weight:400}
+#original-text{width:100%;max-width:360px;font-size:13px;color:#3a3a5a;text-align:center;min-height:20px;margin-bottom:40px}
+.btn-row{display:flex;gap:12px;width:100%;max-width:360px;margin-bottom:12px}
+button{flex:1;padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+#btn-listen{background:#1a1a40;color:#60a5fa;border:1px solid #2a2a6a}
+#btn-listen.listening{background:#60a5fa22;border-color:#60a5fa66}
+.lang-row{display:flex;gap:8px;width:100%;max-width:360px;margin-bottom:32px}
+.lang-label{font-size:12px;color:#3a3a5a;display:flex;align-items:center}
+select{background:#12121e;color:#8080c0;border:1px solid #1e1e3a;border-radius:8px;padding:6px 10px;font-size:13px;flex:1}
+#log{width:100%;max-width:360px;font-size:11px;color:#4a4a6a;text-align:center;line-height:1.6}
+</style>
 </head>
 <body>
-  <h1>Smart Glass</h1>
-  <div id="status-bar">
-    <div id="status-dot connected"></div>
-    <span id="status-text">WiFi 모드</span>
-  </div>
-  <div id="display-box">
-    <div id="translated-text" class="placeholder">번역 결과가 여기에 표시됩니다</div>
-  </div>
-  <div id="original-text"></div>
-  <div class="lang-row">
-    <span class="lang-label">듣기</span>
-    <select id="lang-from">
-      <option value="en-US">영어</option>
-      <option value="ja-JP">일본어</option>
-      <option value="zh-CN">중국어</option>
-      <option value="ko-KR">한국어</option>
-    </select>
-    <span class="lang-label">→ 번역</span>
-    <select id="lang-to">
-      <option value="ko">한국어</option>
-      <option value="en">영어</option>
-      <option value="ja">일본어</option>
-      <option value="zh">중국어</option>
-    </select>
-  </div>
-  <div class="btn-row">
-    <button id="btn-listen" onclick="toggleListen()">🎤 통역 시작</button>
-  </div>
-  <div id="log">ESP32 IP: 192.168.0.8</div>
+<h1>Smart Glass</h1>
+<div id="status-bar">
+  <div id="status-dot"></div>
+  <span id="status-text">준비됨</span>
+</div>
+<div id="display-box">
+  <div id="translated-text" class="placeholder">번역 결과가 여기에 표시됩니다</div>
+</div>
+<div id="original-text"></div>
+<div class="lang-row">
+  <span class="lang-label">듣기</span>
+  <select id="lang-from">
+    <option value="en-US">영어</option>
+    <option value="ja-JP">일본어</option>
+    <option value="zh-CN">중국어</option>
+    <option value="ko-KR">한국어</option>
+  </select>
+  <span class="lang-label">→ 번역</span>
+  <select id="lang-to">
+    <option value="ko">한국어</option>
+    <option value="en">영어</option>
+    <option value="ja">일본어</option>
+    <option value="zh">중국어</option>
+  </select>
+</div>
+<div class="btn-row">
+  <button id="btn-listen" onclick="toggleListen()">🎤 통역 시작</button>
+</div>
+<div id="log">통역 시작 버튼을 누르세요</div>
 
-  <script>
-    const ESP32_IP = '192.168.0.8';
-    let recognition = null;
-    let isListening = false;
+<script>
+const BIN_ID = '6a58382fda38895dfe63e520';
+const API_KEY = '$2a$10$ze8gxkwSjNXN3usfVvcGJuyYtyM1xgnB3zl8zBtfNQYt1izamwm4O';
 
-    function log(msg) {
-      document.getElementById('log').textContent = msg;
-    }
+let recognition = null;
+let isListening = false;
 
-function sendToESP32(text) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    const url = `http://${ESP32_IP}/text?text=${encodeURIComponent(text)}`;
-    img.onload = () => { log('OLED 전송 완료'); resolve(); };
-    img.onerror = () => { log('OLED 전송 완료'); resolve(); };
-    img.src = url;
-  });
+function log(msg) { document.getElementById('log').textContent = msg; }
+
+async function saveToJsonBin(text) {
+  try {
+    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': API_KEY
+      },
+      body: JSON.stringify({ text: text })
+    });
+    log('OLED 전송 완료');
+  } catch(e) {
+    log('전송 오류: ' + e.message);
+  }
 }
 
-    async function translate(text, from, to) {
-      try {
-        const langPair = `${from.split('-')[0]}|${to}`;
-        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        return data.responseData.translatedText;
-      } catch (e) {
-        return text;
-      }
-    }
+async function translate(text, from, to) {
+  try {
+    const langPair = from.split('-')[0] + '|' + to;
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`);
+    const data = await res.json();
+    return data.responseData.translatedText;
+  } catch(e) { return text; }
+}
 
-    function toggleListen() {
-      if (isListening) {
-        recognition && recognition.stop();
-        return;
-      }
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        log('음성 인식이 지원되지 않습니다. 사파리를 사용해주세요.');
-        return;
-      }
-      recognition = new SpeechRecognition();
-      recognition.lang = document.getElementById('lang-from').value;
-      recognition.continuous = true;
-      recognition.interimResults = false;
+function toggleListen() {
+  if (isListening) { recognition && recognition.stop(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { log('사파리에서 열어주세요'); return; }
+  recognition = new SR();
+  recognition.lang = document.getElementById('lang-from').value;
+  recognition.continuous = true;
+  recognition.interimResults = false;
 
-      recognition.onstart = () => {
-        isListening = true;
-        document.getElementById('status-dot').className = 'listening';
-        document.getElementById('status-text').textContent = '듣는 중...';
-        document.getElementById('btn-listen').textContent = '⏹ 중지';
-        document.getElementById('btn-listen').classList.add('listening');
-        log('말씀하세요...');
-      };
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('status-dot').className = 'listening';
+    document.getElementById('status-text').textContent = '듣는 중...';
+    document.getElementById('btn-listen').textContent = '⏹ 중지';
+    document.getElementById('btn-listen').classList.add('listening');
+    log('말씀하세요...');
+  };
 
-      recognition.onresult = async (e) => {
-        const last = e.results[e.results.length - 1];
-        const original = last[0].transcript.trim();
-        const fromLang = document.getElementById('lang-from').value;
-        const toLang = document.getElementById('lang-to').value;
-        document.getElementById('original-text').textContent = original;
-        log('번역 중...');
-        const translated = await translate(original, fromLang, toLang);
-        const el = document.getElementById('translated-text');
-        el.textContent = translated;
-        el.classList.remove('placeholder');
-        await sendToESP32(translated);
-      };
+  recognition.onresult = async (e) => {
+    const last = e.results[e.results.length - 1];
+    const original = last[0].transcript.trim();
+    const fromLang = document.getElementById('lang-from').value;
+    const toLang = document.getElementById('lang-to').value;
+    document.getElementById('original-text').textContent = original;
+    log('번역 중...');
+    const translated = await translate(original, fromLang, toLang);
+    const el = document.getElementById('translated-text');
+    el.textContent = translated;
+    el.classList.remove('placeholder');
+    await saveToJsonBin(translated);
+  };
 
-      recognition.onerror = (e) => { log('오류: ' + e.error); };
-
-      recognition.onend = () => {
-        isListening = false;
-        document.getElementById('status-dot').className = 'connected';
-        document.getElementById('status-text').textContent = 'WiFi 모드';
-        document.getElementById('btn-listen').textContent = '🎤 통역 시작';
-        document.getElementById('btn-listen').classList.remove('listening');
-        log('인식 종료. 다시 누르면 시작됩니다.');
-      };
-
-      recognition.start();
-    }
-  </script>
+  recognition.onerror = (e) => { log('오류: ' + e.error); };
+  recognition.onend = () => {
+    isListening = false;
+    document.getElementById('status-dot').className = '';
+    document.getElementById('status-text').textContent = '준비됨';
+    document.getElementById('btn-listen').textContent = '🎤 통역 시작';
+    document.getElementById('btn-listen').classList.remove('listening');
+    log('인식 종료. 다시 누르면 시작됩니다.');
+  };
+  recognition.start();
+}
+</script>
 </body>
 </html>
